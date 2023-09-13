@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Poppins&weight=600&size=28&duration=3500&pause=500&color=151CF7&center=true&vCenter=true&width=435&lines=Aptech+Vison+2023;Team+Humanoid+Robot;" alt="Typing SVG" />
+  <img src="https://readme-typing-svg.herokuapp.com?font=Poppins&weight=600&size=28&duration=3500&pause=500&color=72c377&center=true&vCenter=true&width=435&lines=Aptech+Vison+2023;Team+Humanoid+Robot;" alt="Typing SVG" />
 </div>
 
 ## Instructions
