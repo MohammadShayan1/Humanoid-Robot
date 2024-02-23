@@ -88,11 +88,6 @@ def takeCommand():
         return "None"
     return query
 
-
-#def sendEmail(to, content):
- #   pass
-
-
 def takeAttendance():
     r = sr.Recognizer()
     current_date = datetime.datetime.now().strftime('%d-%m-%Y')
@@ -105,109 +100,92 @@ def takeAttendance():
      
     if day in Day_dict.keys():
         day_of_the_week = Day_dict[day]
-    with sr.Microphone() as source:
-        r.adjust_for_ambient_noise(source)
-        print("Listening...")
-        audio = r.listen(source, phrase_time_limit=10)
-        try:
-            print("Recognizing...")
+        
+    attendance = {
+        day_of_the_week : time,
+        "Elon Musk": False,
+        "Bill Gates": False,
+        "Mohammad Shayan": False,
+        "Shahmeer Fareed": False
+    }
 
-# Load the known images and encode them
-            imgElon = face_recognition.load_image_file("C:/Users/Mohammad Shayan/Desktop/Face/Elon_Musk.jpg")
+    try:
+        cap = cv2.VideoCapture(0)  # Change the camera index as per your setup
+
+        while True:
+            ret, frame = cap.read()
+
+            if not ret:
+                print("Failed to capture frame")
+                break
+            # Load the known images and encode them
+            imgElon = face_recognition.load_image_file("#your pic url")
             imgElon_encoding = face_recognition.face_encodings(imgElon)[0]
 
-            imgBill = face_recognition.load_image_file("C:/Users/Mohammad Shayan/Desktop/Face/Bill_Gates.jpeg")
+            imgBill = face_recognition.load_image_file("#your pic url")
             imgBill_encoding = face_recognition.face_encodings(imgBill)[0]
 
-            imgshayan1 = face_recognition.load_image_file("C:/Users/Mohammad Shayan/Desktop/Face/Mohammad_Shayan.png")
+            imgshayan1 = face_recognition.load_image_file("#your pic url")
             imgshayan1_encoding = face_recognition.face_encodings(imgshayan1)[0]
 
-            imgshayan2 = face_recognition.load_image_file("C:/Users/Mohammad Shayan/Desktop/Face/Mohammad_Shayan1.jpg")
+            imgshayan2 = face_recognition.load_image_file("#your pic url")
             imgshayan2_encoding = face_recognition.face_encodings(imgshayan2)[0]
 
-            imgshahmeer = face_recognition.load_image_file("C:/Users/Mohammad Shayan/Desktop/Face/Shahmeer_Fareed.jpg")
+            imgshahmeer = face_recognition.load_image_file("#your pic url")
             imgshahmeer_encoding = face_recognition.face_encodings(imgshahmeer)[0]
 
-            imgshahmeer2 = face_recognition.load_image_file("C:/Users/Mohammad Shayan/Desktop/Face/Shahmeer_Fareed1.jpg")
+            imgshahmeer2 = face_recognition.load_image_file("#your pic url")
             imgshahmeer2_encoding = face_recognition.face_encodings(imgshahmeer2)[0]
+            rgb_frame = np.ascontiguousarray(frame[:, :, ::-1])
+            face_locations = face_recognition.face_locations(rgb_frame)
+            face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
 
+            for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
+                matches = face_recognition.compare_faces([
+                    imgElon_encoding, imgBill_encoding,
+                    imgshayan1_encoding, imgshayan2_encoding,
+                    imgshahmeer_encoding, imgshahmeer2_encoding
+                ], face_encoding)
 
-# Create a dictionary to keep track of attendance
-            attendance = {
-            day_of_the_week : time,
-            "Elon Musk": False,
-            "Bill Gates": False,
-            "Mohammad Shayan" : False,
-            "Mohammad Shayan" : False,
-            "Shahmeer Fareed" : False,
-            "Shahmeer Fareed" : False
-            
-    
-            }
+                name = "Unknown"
+                face_distances = face_recognition.face_distance([
+                    imgElon_encoding, imgBill_encoding,
+                    imgshayan1_encoding, imgshayan2_encoding,
+                    imgshahmeer_encoding, imgshahmeer2_encoding
+                ], face_encoding)
 
-# Set up the camera
-            cap = cv2.VideoCapture(c)
+                best_match_index = np.argmin(face_distances)
 
-            while True:
-    # Capture a frame
-                ret, frame = cap.read()
+                if matches[best_match_index]:
+                    name = ["Elon Musk", "Bill Gates", "Mohammad Shayan",
+                            "Mohammad Shayan", "Shahmeer Fareed", "Shahmeer Fareed"][best_match_index]
 
-    # Convert the frame to RGB format
-                rgb_frame = frame[:, :, ::-1]
+                    attendance[name] = True
 
-    # Detect faces in the frame
-                face_locations = face_recognition.face_locations(rgb_frame)
-                face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
+                cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
+                cv2.putText(frame, name, (left, bottom+20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
-    # For each face, check if it matches a known face
-                for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
-                    matches = face_recognition.compare_faces([imgElon_encoding, imgBill_encoding, imgshayan1_encoding, imgshayan2_encoding, imgshahmeer_encoding, imgshahmeer2_encoding], face_encoding)
-                    name = "Unknown"
+            cv2.imshow('Face Recognition', frame)
 
-        # Find the best match
-                    face_distances = face_recognition.face_distance([imgElon_encoding, imgBill_encoding, imgshayan1_encoding, imgshayan2_encoding, imgshahmeer_encoding, imgshahmeer2_encoding], face_encoding)
-                    best_match_index = np.argmin(face_distances)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
-                    if matches[best_match_index]:
-                        name = ["Elon Musk", "Bill Gates", "Mohammad Shayan", "Mohammad Shayan", "Shahmeer Fareed", "Shahmeer Fareed"][best_match_index]
+        print("Attendance Report:")
+        for name, present in attendance.items():
+            print(name + ": " + ("Present" if present else "Haven't come yet"))
 
-            # Mark attendance for this person
-                        attendance[name] = True
+        cap.release()
+        cv2.destroyAllWindows()
 
-        # Draw a box around the face and label it
-                    cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
-                    cv2.putText(frame, name, (left, bottom+20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        df = pd.DataFrame(list(attendance.items()), columns=['Name', 'Present'])
+        filename = f'attendance_{current_date}.xlsx'
+        df.to_excel(filename, index=False)
+        print(f"Attendance data saved to {filename}")
+        speak("Your attendance has been Marked")
 
-    # Display the resulting image
-                cv2.imshow('Face Recognition', frame)
-
-    # Exit the loop if the 'q' key is pressed
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-
-# Print the attendance report
-            print("Attendance Report:")
-            for name, present in attendance.items():
-                print(name + ": " + ("Present" if present else "Haven't came yet"))
-
-# Release the capture and destroy all windows
-            cap.release()
-            cv2.destroyAllWindows()
-
-
-
-# Create a new DataFrame with the attendance data
-            df = pd.DataFrame(list(attendance.items()), columns=['Name', 'Present'])
-
-# Write the DataFrame to an Excel file
-            filename = f'attendance_{current_date}.xlsx'
-            df.to_excel(filename, index=False)
-            print(f"Attendance data saved to {filename}")
-            speak("Your attendance has been Marked")
-        except Exception as e:
-            print(e)
-            print("Say that again please...")
-            return
+    except Exception as e:
+        print(e)
+        print("Error occurred. Please try again.")
 
 if __name__ == "__main__":
     wishMe()
